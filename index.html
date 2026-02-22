@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultra Lobby ML Style - Ultimate</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Segoe UI,sans-serif;}
+
+body{
+background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+height:100vh;
+display:flex;
+align-items:center;
+color:white;
+overflow:hidden;
+position:relative;
+}
+
+/* PARTICLE */
+canvas{
+position:fixed;
+top:0;
+left:0;
+z-index:-1;
+}
+
+/* LOBBY */
+.lobby{
+width:380px;
+padding:20px;
+}
+
+.player{
+display:flex;
+align-items:center;
+background:rgba(255,255,255,0.07);
+margin-bottom:15px;
+padding:10px;
+border-radius:15px;
+cursor:grab;
+transition:0.3s;
+position:relative;
+}
+
+.player:hover{
+box-shadow:0 0 15px #00ccff;
+transform:scale(1.03);
+}
+
+.player img{
+width:70px;
+height:70px;
+border-radius:15px;
+object-fit:cover;
+}
+
+.player.blue{border-left:5px solid #00aaff;}
+.player.red{border-left:5px solid #ff3c3c;}
+
+.rank{
+position:absolute;
+right:10px;
+top:10px;
+width:30px;
+height:30px;
+border-radius:50%;
+background:radial-gradient(circle,#ffd700,#ff9900);
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:10px;
+font-weight:bold;
+color:black;
+box-shadow:0 0 10px gold;
+}
+
+.info{margin-left:15px;}
+
+.ready{
+margin-top:5px;
+padding:4px 10px;
+border-radius:20px;
+font-size:12px;
+display:inline-block;
+background:red;
+}
+
+.ready.active{background:#00ff88;}
+
+button{
+margin-top:5px;
+padding:5px 12px;
+border:none;
+border-radius:20px;
+cursor:pointer;
+background:#00aaff;
+color:white;
+font-size:12px;
+}
+
+/* DRAFT AREA */
+.draft{
+flex:1;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+}
+
+.draft h2{
+margin-bottom:20px;
+text-shadow:0 0 20px #00ccff;
+}
+
+/* STORY SIZE HERO */
+.hero-list{
+display:flex;
+gap:20px;
+}
+
+.hero{
+width:200px;
+height:355px; /* 9:16 ratio */
+border-radius:20px;
+overflow:hidden;
+cursor:pointer;
+transition:0.3s;
+border:3px solid transparent;
+position:relative;
+}
+
+.hero img{
+width:100%;
+height:100%;
+object-fit:cover;
+}
+
+.hero:hover{
+transform:scale(1.05);
+border:3px solid #00ccff;
+box-shadow:0 0 25px #00ccff;
+}
+
+.banned{
+opacity:0.3;
+filter:grayscale(100%);
+}
+
+/* MATCH SCREEN */
+.match-screen{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:linear-gradient(135deg,#001f3f,#003366);
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:40px;
+font-weight:bold;
+opacity:0;
+pointer-events:none;
+transition:0.5s;
+z-index:10;
+}
+
+.match-screen.active{
+opacity:1;
+pointer-events:auto;
+animation:glowText 1.5s infinite;
+}
+
+@keyframes glowText{
+0%{text-shadow:0 0 10px #00ccff;}
+50%{text-shadow:0 0 40px #00ccff;}
+100%{text-shadow:0 0 10px #00ccff;}
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="particles"></canvas>
+
+<div class="lobby" id="lobby">
+
+<div class="player" draggable="true">
+<img src="ASEP.jpeg">
+<div class="info">
+<div>Asep</div>
+<div class="ready">Not Ready</div>
+<button onclick="toggleReady(this)">Ready</button>
+</div>
+</div>
+
+<div class="player" draggable="true">
+<img src="DEDEN.jpeg">
+<div class="info">
+<div>Deden</div>
+<div class="ready">Not Ready</div>
+<button onclick="toggleReady(this)">Ready</button>
+</div>
+</div>
+
+<div class="player" draggable="true">
+<img src="EKA.jpeg">
+<div class="info">
+<div>Eka</div>
+<div class="ready">Not Ready</div>
+<button onclick="toggleReady(this)">Ready</button>
+</div>
+</div>
+
+<div class="player" draggable="true">
+<img src="arif.jpeg">
+<div class="info">
+<div>Arif</div>
+<div class="ready">Not Ready</div>
+<button onclick="toggleReady(this)">Ready</button>
+</div>
+</div>
+
+<div class="player" draggable="true">
+<img src="ATRIS.jpeg">
+<div class="info">
+<div>Atris</div>
+<div class="ready">Not Ready</div>
+<button onclick="toggleReady(this)">Ready</button>
+</div>
+</div>
+
+</div>
+
+<div class="draft">
+<h2>SKIN</h2>
+<div class="hero-list">
+<div class="hero" onclick="banHero(this)">
+<img src="EKA skin.JPG">
+</div>
+<div class="hero" onclick="banHero(this)">
+<img src="EKA SKIN 2.jpeg">
+</div>
+<div class="hero" onclick="banHero(this)">
+<img src="EKA SKIN 3.jpeg">
+</div>
+</div>
+</div>
+
+<div class="match-screen" id="matchScreen">
+MATCH STARTING...
+</div>
+
+<!-- SOUND -->
+<audio id="clickSound" src="ML.mp3"></audio>
+
+<!-- BACKGROUND MUSIC -->
+<audio id="bgMusic" autoplay loop>
+<source src="ML.mp3" type="audio/mp3">
+</audio>
+
+<script>
+function playSound(){
+document.getElementById("clickSound").play();
+}
+
+function toggleReady(btn){
+playSound();
+let readyDiv = btn.previousElementSibling;
+readyDiv.classList.toggle("active");
+readyDiv.innerText = readyDiv.classList.contains("active") ? "Ready" : "Not Ready";
+checkAllReady();
+}
+
+function checkAllReady(){
+let players=document.querySelectorAll(".player");
+let allReady=true;
+players.forEach(p=>{
+if(!p.querySelector(".ready").classList.contains("active")){
+allReady=false;
+}
+});
+if(allReady){
+document.getElementById("matchScreen").classList.add("active");
+}
+}
+
+function banHero(hero){
+playSound();
+hero.classList.toggle("banned");
+}
+
+/* TEAM AUTO + RANK */
+document.querySelectorAll(".player").forEach((player,index)=>{
+if(index<3){player.classList.add("blue");}
+else{player.classList.add("red");}
+
+let rank=document.createElement("div");
+rank.className="rank";
+rank.innerText="Mythic";
+player.appendChild(rank);
+});
+
+/* PARTICLE */
+const canvas=document.getElementById("particles");
+const ctx=canvas.getContext("2d");
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+let particles=[];
+for(let i=0;i<120;i++){
+particles.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+size:Math.random()*3,
+speed:Math.random()*1.2
+});
+}
+
+function animate(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+ctx.fillStyle="rgba(0,200,255,0.7)";
+particles.forEach(p=>{
+p.y+=p.speed;
+if(p.y>canvas.height){p.y=0;}
+ctx.beginPath();
+ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+ctx.fill();
+});
+requestAnimationFrame(animate);
+}
+animate();
+</script>
+
+</body>
+</html>
